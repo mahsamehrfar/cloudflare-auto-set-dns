@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare Auto DNS Set</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        :root {
+            --bg-body: #252836;
+            --bg-card: #1F1D2B;
+            --bg-inner: #2D3042;
+            --bg-tabs: #13121A;
+            
+            --text-main: #FFFFFF;
+            --text-muted: #808191;
+            
+            --accent-purple: #6C5DD3;
+            --accent-purple-hover: #5b4eb3;
+            --accent-green: #22B07D;
+            --accent-red: #FF754C;
+            --border-color: #353340;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .main-wrapper {
+            display: flex; justify-content: center; align-items: flex-start;
+            width: 100%; max-width: 1100px; padding: 40px 20px 80px 20px; box-sizing: border-box; gap: 30px;
+            z-index: 2;
+        }
+
+        .solid-panel {
+            background: var(--bg-card);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .panel-container { padding: 40px; width: 480px; max-width: 100%; position: relative; z-index: 2; }
+        
+        h1 {
+            color: var(--text-main); text-align: center; font-size: 19px; 
+            margin-top: 0; margin-bottom: 30px; font-weight: 800; letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        /* استایل تب‌های جدید و جذاب‌تر */
+        .tabs {
+            display: flex; background: var(--bg-tabs); border-radius: 16px;
+            padding: 6px; margin-bottom: 30px; border: 1px solid var(--border-color);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .tab-btn {
+            flex: 1; background: transparent; color: var(--text-muted); border: none; cursor: pointer;
+            padding: 10px; font-size: 13px; font-weight: 600; border-radius: 12px; transition: all 0.3s; 
+            font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { 
+            background: var(--bg-card); color: var(--text-main); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+        }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .status-box {
+            background: var(--bg-inner); border-radius: 20px; padding: 25px; margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.02); box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .status-item { margin: 12px 0; font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;}
+        .status-item span { color: var(--text-main); font-weight: 700; font-size: 14px; }
+        
+        .input-group { margin-bottom: 22px; text-align: right; }
+        .input-group label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 12px; font-weight: 600;}
+        .neon-input {
+            width: 100%; padding: 12px 10px; background: transparent; border: none; 
+            border-bottom: 2px solid var(--border-color); border-radius: 0;
+            color: var(--text-main); font-size: 13.5px; outline: none; transition: 0.3s; font-family: inherit; box-sizing: border-box;
+        }
+        .neon-input::placeholder { color: #515466; font-size: 12.5px; }
+        .neon-input:focus { border-bottom-color: var(--accent-purple); }
+        
+        .row-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .primary-btn {
+            background: var(--accent-purple); color: #fff; display: flex; justify-content: center; align-items: center; gap: 8px;
+            font-weight: 700; font-size: 14px; border: none; border-radius: 16px; padding: 16px; cursor: pointer;
+            width: 100%; transition: 0.3s; margin-bottom: 15px; font-family: inherit;
+        }
+        .primary-btn:hover { background: var(--accent-purple-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(108, 93, 211, 0.3); }
+
+        .secondary-btn {
+            background: var(--bg-inner); color: var(--text-main); font-size: 12.5px; padding: 14px; cursor: pointer; 
+            border-radius: 14px; transition: 0.3s; font-weight: 600; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 6px; border: none;
+        }
+        .secondary-btn:hover { background: var(--border-color); transform: translateY(-1px); }
+
+        .fast-test-btn { color: var(--accent-red); background: rgba(255, 117, 76, 0.1); }
+        .fast-test-btn:hover { background: rgba(255, 117, 76, 0.2); }
+
+        .confirm-btn { background: var(--accent-green); display: none; }
+        .confirm-btn:hover { background: #1fa072; box-shadow: 0 8px 20px rgba(34, 176, 125, 0.3); }
+
+        .console-box {
+            background: var(--bg-tabs); border-radius: 16px; padding: 18px; height: 160px; overflow-y: auto; 
+            text-align: left; direction: ltr; font-size: 11.5px; color: var(--accent-green);
+            font-family: 'Courier New', monospace; margin-top: 25px; border: 1px solid var(--border-color);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .data-list { max-height: 160px; overflow-y: auto; margin-bottom: 25px; padding-right: 5px; }
+        .data-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+            background: var(--bg-inner); border-radius: 12px; margin-bottom: 10px; font-size: 12px; transition: 0.2s;
+        }
+        .data-item:hover { background: var(--border-color); transform: translateX(-3px); }
+        .data-item-text { direction: ltr; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 75%; color: var(--text-main); font-family: monospace;}
+        .delete-btn { background: transparent; border: none; color: var(--accent-red); cursor: pointer; border-radius: 8px; transition: 0.2s; font-size: 11.5px; font-weight: 700; padding: 5px;}
+        .delete-btn:hover { text-decoration: underline; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* استایل فوتر اختصاصی */
+        .footer {
+            position: fixed;
+            bottom: 25px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .footer .highlight-green {
+            color: var(--accent-green);
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(34, 176, 125, 0.4);
+        }
+        .footer .highlight-purple {
+            color: #9d8df1;
+            font-weight: 800;
+            text-shadow: 0 0 8px rgba(108, 93, 211, 0.5);
+            letter-spacing: 1px;
+            font-family: Tahoma, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper" id="mainWrapper">
+        
+        <!-- پنل اصلی -->
+        <div class="panel-container solid-panel">
+            <h1><span style="font-size: 22px; filter: drop-shadow(0 0 8px var(--accent-purple));">⚡</span> CLOUDFLARE AUTO DNS SET</h1>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-scan', this)">🎛️ داشبورد</button>
+                <button class="tab-btn" onclick="switchTab('tab-cf', this)">⚙️ تنظیمات</button>
+                <button class="tab-btn" onclick="switchTab('tab-data', this)">🗄️ دیتا سنتر</button>
+            </div>
+
+            <!-- تب داشبورد اسکن -->
+            <div id="tab-scan" class="tab-content active">
+                <div class="status-box">
+                    <div class="status-item">وضعیت سیستم: <span id="panelStatus" style="color: var(--text-main);">آماده به کار</span></div>
+                    <div class="status-item">آی‌پی فعلی روی دامنه: <span id="currentIP">درحال دریافت...</span></div>
+                    <div class="status-item">بهترین کاندید اسکن: <span id="foundIP" style="color: var(--accent-green);">منتظر فرمان</span></div>
+                </div>
+
+                <button id="confirmBtn" class="primary-btn confirm-btn" onclick="confirmIP()">
+                    🚀 تأیید نهایی و ثبت در کلودفلر
+                </button>
+                <button id="scanBtn" class="primary-btn" onclick="startScan()">
+                    🔥 شروع اسکن هوشمند
+                </button>
+                
+                <div id="consoleBox" class="console-box">root@core:~# System initialized...</div>
+            </div>
+
+            <!-- تب تنظیمات -->
+            <div id="tab-cf" class="tab-content">
+                <div class="row-inputs">
+                    <div class="input-group">
+                        <label>Sub/Domain (دامنه هدف)</label>
+                        <input type="text" id="domainInput" class="neon-input" placeholder="sub.domain.com" onchange="saveSettings()">
+                    </div>
+                    <div class="input-group">
+                        <label>API Token (توکن کلودفلر)</label>
+                        <input type="password" id="tokenInput" class="neon-input" placeholder="••••••••••••••" onchange="saveSettings()">
+                    </div>
+                </div>
+
+                <!-- دکمه‌های دریافت توکن و استخراج -->
+                <div style="display:flex; gap:15px; margin-bottom:25px; margin-top: 5px;">
+                    <a href="https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22zone%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22dns%22%2C%22type%22%3A%22edit%22%7D%5D&name=MHJ_AutoSet_DNS_Token&accountId=*&zoneId=all" target="_blank" class="secondary-btn" style="flex:1; margin:0; text-decoration:none; color: var(--accent-green); border: 1px solid rgba(34, 176, 125, 0.3); background: rgba(34, 176, 125, 0.05);">
+                        🔑 گرفتن توکن کلودفلر
+                    </a>
+                    <button class="secondary-btn" style="flex:1; margin:0; color: #a192fc; border: 1px solid rgba(108, 93, 211, 0.3); background: rgba(108, 93, 211, 0.08);" onclick="autoFetchCF(this)">
+                        🪄 استخراج خودکار شناسه‌ها
+                    </button>
+                </div>
+
+                <div class="row-inputs">
+                    <div class="input-group">
+                        <label>Zone ID (شناسه زون)</label>
+                        <input type="text" id="zoneInput" class="neon-input" placeholder="Auto fetched or Manual" onchange="saveSettings()">
+                    </div>
+                    <div class="input-group">
+                        <label>DNS Record ID (شناسه رکورد)</label>
+                        <input type="text" id="recordInput" class="neon-input" placeholder="Auto fetched or Manual" onchange="saveSettings()">
+                    </div>
+                </div>
+                <button class="primary-btn" style="margin-top: 5px;" onclick="saveSettings(); alert('تنظیمات شبکه ذخیره شد.');">💾 ذخیره تنظیمات شبکه</button>
+            </div>
+
+            <!-- تب دیتا سنتر -->
+            <div id="tab-data" class="tab-content">
+                <div class="input-group">
+                    <label>مخزن IP / رنج‌ها</label>
+                    <input type="text" id="ipInput" class="neon-input" placeholder="مثال: 104.16.5. یا آی‌پی کامل">
+                    <div style="display:flex; gap:12px; margin-top:15px;">
+                        <button class="secondary-btn" style="flex:1;" onclick="addIP()">➕ افزودن رنج</button>
+                        <button class="secondary-btn fast-test-btn" style="flex:1;" onclick="testSingleIP()">⚡ تست فوری IP</button>
+                    </div>
+                </div>
+                <div class="data-list" id="ipList"></div>
+
+                <div class="input-group" style="margin-top: 35px;">
+                    <label>مخزن کانفیگ‌های Xray</label>
+                    <input type="text" id="xrayInput" class="neon-input" placeholder="لینک Vless یا Trojan">
+                    <button class="secondary-btn" style="margin-top:15px; width:100%;" onclick="addLink()">💉 تزریق کانفیگ به موتور</button>
+                </div>
+                <div class="data-list" id="linkList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فوتر اختصاصی پایین صفحه -->
+    <div class="footer">
+        ساخته شده با <span class="highlight-green">Xray</span> . توسط <span class="highlight-purple">MHJ Studio</span>
+    </div>
+
+    <script>
+        let isFirstLoad = true;
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            if(tabId === 'tab-data') loadDataManager();
+        }
+
+        async function updateStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
+                
+                document.getElementById('panelStatus').innerText = data.status;
+                document.getElementById('currentIP').innerText = data.current_dns_ip || "نامشخص";
+                document.getElementById('foundIP').innerText = data.candidate_ip || "منتظر عملیات...";
+                
+                if (isFirstLoad) {
+                    document.getElementById('domainInput').value = data.config.cloudflare.domain || '';
+                    document.getElementById('tokenInput').value = data.config.cloudflare.api_token || '';
+                    document.getElementById('zoneInput').value = data.config.cloudflare.zone_id || '';
+                    document.getElementById('recordInput').value = data.config.cloudflare.record_id || '';
+                    isFirstLoad = false;
+                }
+
+                const confirmBtn = document.getElementById('confirmBtn');
+                const scanBtn = document.getElementById('scanBtn');
+
+                if (data.status === "Awaiting Confirmation") {
+                    confirmBtn.style.display = "flex";
+                    scanBtn.style.display = "none";
+                    document.getElementById('panelStatus').style.color = "var(--accent-red)";
+                } else if (data.status === "Scanning") {
+                    confirmBtn.style.display = "none";
+                    scanBtn.innerHTML = "⏳ در حال پردازش...";
+                    scanBtn.disabled = true;
+                    scanBtn.style.opacity = "0.6";
+                    document.getElementById('panelStatus').style.color = "var(--accent-purple)";
+                } else {
+                    confirmBtn.style.display = "none";
+                    scanBtn.style.display = "flex";
+                    scanBtn.innerHTML = "🔥 شروع اسکن هوشمند";
+                    scanBtn.disabled = false;
+                    scanBtn.style.opacity = "1";
+                    document.getElementById('panelStatus').style.color = "var(--text-main)";
+                }
+
+                const logRes = await fetch('/api/logs');
+                const logData = await logRes.json();
+                const consoleBox = document.getElementById('consoleBox');
+                const isScrolledToBottom = consoleBox.scrollHeight - consoleBox.clientHeight <= consoleBox.scrollTop + 10;
+                
+                const formattedLogs = logData.logs.map(log => `root@core:~# ${log}`).join('<br>');
+                consoleBox.innerHTML = formattedLogs || 'root@core:~# Waiting for commands...';
+                
+                if(isScrolledToBottom) consoleBox.scrollTop = consoleBox.scrollHeight;
+
+            } catch (e) {}
+        }
+
+        async function saveSettings() {
+            const cfData = {
+                domain: document.getElementById('domainInput').value,
+                token: document.getElementById('tokenInput').value,
+                zone: document.getElementById('zoneInput').value,
+                record: document.getElementById('recordInput').value
+            };
+            await fetch('/api/save_config', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(cfData) });
+        }
+
+        // --- اسکریپت جادویی برای گرفتن اتوماتیک کلودفلر ---
+        async function autoFetchCF(btnElement) {
+            const domain = document.getElementById('domainInput').value;
+            const token = document.getElementById('tokenInput').value;
+            
+            if(!domain || !token) {
+                return alert("لطفاً ابتدا فیلد دامنه و توکن را پر کنید!");
+            }
+            
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = "⏳ در حال استخراج...";
+            btnElement.disabled = true;
+            
+            try {
+                const res = await fetch('/api/auto_cf', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({domain: domain, token: token})
+                });
+                const data = await res.json();
+                
+                if(data.status === 'success') {
+                    document.getElementById('zoneInput').value = data.zone_id;
+                    document.getElementById('recordInput').value = data.record_id;
+                    alert(data.message);
+                } else {
+                    alert(data.message);
+                }
+            } catch (e) {
+                alert("خطا در ارتباط با سرور داخلی");
+            }
+            
+            btnElement.innerHTML = originalText;
+            btnElement.disabled = false;
+        }
+
+        async function startScan() {
+            await saveSettings();
+            const res = await fetch('/api/start', {method: 'POST'});
+            const data = await res.json();
+            alert(data.message);
+            updateStatus();
+        }
+
+        async function testSingleIP() {
+            const ip = document.getElementById('ipInput').value;
+            if(!ip) return alert("ابتدا یک آی‌پی در کادر وارد کنید!");
+            await saveSettings();
+            const res = await fetch('/api/test_single', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ip: ip}) });
+            const data = await res.json();
+            alert(data.message);
+            document.getElementById('ipInput').value = '';
+            updateStatus();
+            document.querySelector('.tab-btn').click(); 
+        }
+
+        async function confirmIP() {
+            const res = await fetch('/api/confirm', {method: 'POST'});
+            const data = await res.json();
+            alert(data.message);
+            updateStatus();
+        }
+
+        async function loadDataManager() {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            
+            const ipList = document.getElementById('ipList');
+            ipList.innerHTML = data.config.ip_prefixes.map(ip => `
+                <div class="data-item">
+                    <span class="data-item-text">${ip}*</span>
+                    <button class="delete-btn" onclick="deleteItem('ip', '${ip}')">حذف</button>
+                </div>
+            `).join('') || '<div style="color:var(--text-muted); text-align:center; font-size:12px; padding:15px;">لیست خالی است</div>';
+
+            const linkList = document.getElementById('linkList');
+            linkList.innerHTML = data.config.xray_links.map(link => `
+                <div class="data-item">
+                    <span class="data-item-text" title="${link}">${link.substring(0,35)}...</span>
+                    <button class="delete-btn" onclick="deleteItem('link', '${link}')">حذف</button>
+                </div>
+            `).join('') || '<div style="color:var(--text-muted); text-align:center; font-size:12px; padding:15px;">لیست خالی است</div>';
+        }
+
+        async function addIP() {
+            const ip = document.getElementById('ipInput').value;
+            if(!ip) return alert("فیلد خالی است");
+            await fetch('/api/add_ip', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ip: ip}) });
+            document.getElementById('ipInput').value = '';
+            loadDataManager();
+        }
+
+        async function addLink() {
+            const link = document.getElementById('xrayInput').value;
+            if(!link) return alert("فیلد خالی است");
+            await fetch('/api/add_link', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({link: link}) });
+            document.getElementById('xrayInput').value = '';
+            loadDataManager();
+        }
+
+        async function deleteItem(type, value) {
+            if(!confirm('آیا از حذف این رکورد مطمئن هستید؟')) return;
+            await fetch(`/api/delete_${type}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({value: value}) });
+            loadDataManager();
+        }
+
+        setInterval(updateStatus, 2000);
+        updateStatus();
+    </script>
+</body>
+</html>
